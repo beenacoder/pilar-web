@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid';
 
 const Todo = () => {
     const dispatch = useDispatch()
-    const [text, setText] = useState(null)
+    const [text, setText] = useState('')
     const todo = useSelector(appSelector.todo)
 
 
@@ -16,7 +16,7 @@ const Todo = () => {
 
     const addTask = ()=>{
         dispatch(appActions.addTodo({text: text, id: uuid()}))
-        setText(null)
+        setText('')
     }
 
     const handleChange = (event)=>{
