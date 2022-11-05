@@ -1,5 +1,3 @@
-
-
 import React, {useEffect, useState, useRef} from 'react';
 import { Outlet, useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
@@ -18,12 +16,16 @@ ListItemIcon,
 Drawer,
 Collapse,
 Popover,
-MenuItem as MenuItemMui
+MenuItem as MenuItemMui,
+Divider,
+Stack
 } from '@mui/material';
-import MenuIcon from "@mui/icons-material/Menu"
-import {drawerMenu, popMenu } from '../../constants/menu'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import MenuIcon from "@mui/icons-material/Menu";
+import {drawerMenu, popMenu } from '../../constants/menu';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useSelector, useDispatch } from 'react-redux';
+import { appSelector, appActions } from '../../redux/appRedux';
 
 
 const drawerWidth = 280;
@@ -174,52 +176,68 @@ const PopMenu = () => {
 
 const DashboardLayout = () => {
     const [open, setOpen] = useState(false)
+    const dispatch = useDispatch()
+    const pageTitle = useSelector(appSelector.pageTitle)
 
     return (
         <Box sx={{ display: 'flex' }}>
-        <AppBar position="absolute">
-        <Toolbar
-        sx={{
-        pr: '24px',
-        }}
-        >
-        <Box sx={{cursor: 'pointer'}}>
-            <MenuIcon sx={{mr: 2 }} onClick={()=>setOpen(true)}   />
-        </Box>
-        <Typography
-        component="h1"
-        variant="h6"
-        color="inherit"
-        noWrap
-        sx={{ flexGrow: 1 }}
-        >
-        Pilar Tecno Web
-        </Typography>
-        <PopMenu />
-        </Toolbar>
-        </AppBar>
+            <AppBar position="absolute">
+                <Toolbar
+                    sx={{
+                        pr: '24px',
+                    }}
+                >
+                    <Stack sx={{display:"flex"}} direction="row" justifyContent="space-between" spacing={2}>
+                    <Box sx={{ cursor: 'pointer' }}>
+                        <MenuIcon sx={{ mr: 2 }} onClick={() => setOpen(true)} />
+                    </Box>
+                        <Typography
+                            component="h1"
+                            variant="h6"
+                            color="inherit"
+                            noWrap
+                            sx={{ flexGrow: 1 }}
+                        >
+                            Pilar Tecno Web
+                        </Typography>
 
-        <SideMenu open={open} onClose = {()=>setOpen(false)} />
+                        <Divider orientation="vertical" variant="middle" flexItem sx={{ color: "#fff" }}/>
+                        
+                        <Typography
+                            component="h1"
+                            variant="h6"
+                            color="inherit"
+                            noWrap
+                            sx={{ flexGrow: 1 }}
+                        >
+                            {pageTitle}
+                        </Typography>
+                    </Stack>
+                    <PopMenu />
+                </Toolbar>
+            </AppBar>
 
-        <Box
-        component="main"
-        sx={{
-        backgroundColor: (theme) =>
-        theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : theme.palette.grey[900],
-        flexGrow: 1,
-        height: '100vh',
-        overflow: 'auto',
-        }}
-        >
-        <Toolbar />
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Outlet/>
-        </Container>
+            <SideMenu open={open} onClose={() => setOpen(false)} />
+
+            <Box
+                component="main"
+                sx={{
+                    backgroundColor: (theme) =>
+                        theme.palette.mode === 'light'
+                            ? theme.palette.grey[100]
+                            : theme.palette.grey[900],
+                    flexGrow: 1,
+                    height: '100vh',
+                    overflow: 'auto',
+                }}
+            >
+                <Toolbar />
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <Outlet />
+                </Container>
+            </Box>
         </Box>
-        </Box>
-        )
+    )
 }
 
 export default DashboardLayout;
