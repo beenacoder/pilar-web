@@ -1,20 +1,47 @@
 import React, {useEffect, useState} from "react";
-import {Grid, Paper, Box, Typography, Card, CardContent, CardMedia} from '@mui/material';
+import {Avatar,Grid, Paper, Box, Typography, Card, CardContent, CardMedia, Dialog, DialogTitle, DialogContent, IconButton, Accordion, AccordionSummary, AccordionDetails   } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { appSelector, appActions } from '../../redux/appRedux';
 import api, {IMG_URL} from "../../services/api";
-import POKE_IMG from '../../assets/images/poke.png'
+import POKE_IMG from '../../assets/images/poke.png';
+import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 
 
 
 const FetchList = () => {
-    const [pokemons, setPokemons] = useState(null)
-    const [next, setNext] = useState(null)
-    const dispatch = useDispatch()
+    const [pokemons, setPokemons] = useState(null);
+    const [next, setNext] = useState(null);
+    const dispatch = useDispatch();
+    const [open, setOpen] = React.useState(false);
+    const [pokemonData, setPokemonData] = useState(null);
+
+
     useEffect(()=>{
         dispatch(appActions.setPageTitle('LISTA TAREAS'))
         getPokemons()
-    },[])
+    },[]);
+
+    const handleClickOpen = async (url) => {
+        try {
+            // dispatch(appActions.loading(true))
+            const result = await api.GET(url)
+            if (result) {
+                console.log('poke data: ', result)
+                setPokemonData(result);
+                setOpen(true);
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            // dispatch(appActions.loading(false))
+        }
+        
+      };
+      const handleClose = () => {
+        setOpen(false);
+      };
 
     const getPokemons = async () => {
         try {
@@ -28,10 +55,9 @@ const FetchList = () => {
         } catch (error) {
             console.log(error)
         } finally {
-            dispatch(appActions.loading(false))
+            // dispatch(appActions.loading(false))
         }
     }
-
 
     const loadMore = async () => {
         try {
@@ -45,7 +71,7 @@ const FetchList = () => {
         } catch (error) {
             console.log(error)
         } finally {
-            dispatch(appActions.loading(false))
+            // dispatch(appActions.loading(false))
         }
     }
 
@@ -61,7 +87,6 @@ const FetchList = () => {
         }
     }
 
-
     const renderItem = (item) => {
         const path = item.url.split('/')
         const imgID = getPokemonImgId(path[6])
@@ -69,7 +94,7 @@ const FetchList = () => {
             <Card p={2} sx={{
                 display: 'flex', height: 100, cursor: 'pointer',
                 '&:hover': { backgroundColor: '#5acdbd', color: 'white' }
-            }}>
+            }} onClick={() => handleClickOpen(item.url)}>
                 <CardContent sx={{ flex: '1 0 auto' }}>
                     <Typography component="div" variant="h5">
                         N° {path[6]}
@@ -89,46 +114,118 @@ const FetchList = () => {
     }
 
 
-
     return (
-        <Grid container spacing={3}>
-            <Grid item xs={12}>
-                <Typography component="div" variant="h5">
-                    Mi Pokedex
-                </Typography>
+        <>
+            <Grid container spacing={3}>
+                <Grid item xs={12}>
+                    <Typography component="div" variant="h5">
+                        Mi Pokedex
+                    </Typography>
+                </Grid>
+                {
+                    pokemons && pokemons.map((p, index) => {
+                        return (
+                            <Grid item xs={4} key={index}>
+                                {renderItem(p)}
+                                
+                            </Grid>
+                        )
+                    })
+                }   
+                {/* BOTON PARA RENDERIZAR MAS POKEMONES */} 
+                <Grid item xs={4} >
+                    <Card p={2} sx={{
+                        display: 'flex', height: 100, cursor: 'pointer',
+                        backgroundColor: '#317b52', '&:hover': { backgroundColor: '#5acdbd' }}}
+                        onClick={() => loadMore()}>
+                        <CardContent sx={{ flex: '1 0 auto' }}>
+                            <Typography component="div" variant="h5" sx={{ color: 'white' }}>
+                                Cargar Más
+                            </Typography>
+                        </CardContent>
+                        <CardMedia
+                            component="img"
+                            sx={{ width: 100, p: 2 }}
+                            image={POKE_IMG}
+                            alt="Live from space album cover"
+                        />
+                    </Card>
+                </Grid>
             </Grid>
-            {
-                pokemons && pokemons.map((p, index) => {
-                    return (
-                        <Grid item xs={4} key={index}>
-                            {renderItem(p)}
-                        </Grid>
-                    )
-                })
-            }
 
-            {/* BOTON PARA RENDERIZAR MAS POKEMONES */}
+            <Dialog onClose={handleClose}
+                aria-labelledby="customized-dialog-title"
+                open={open}
+            >
+                <BootstrapDialogTitle key={pokemonData.name} id="customized-dialog-title" onClose={handleClose}
+                sx={{display:'flex', justifyContent:'center', alignItems:'center'}}
+                >
+                    {pokemonData ? pokemonData.name : 'No hay nada'}
+                    <Avatar sx={{ width: 110, height: 110 }} src={pokemonData.sprites.front_default}></Avatar>
+                    <Avatar sx={{ width: 110, height: 110 }} src={pokemonData.sprites.back_shiny}></Avatar>
+                </BootstrapDialogTitle>
+                <DialogContent dividers>
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                                >
+                                <Typography>Habilidades</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                            {pokemonData && pokemonData.abilities && pokemonData.abilities.map((ab, index) => ( 
+                                <Typography key={ab.index}>
+                                    {ab.ability.name}
+                                </Typography>) 
+                            )}
+                                
+                            </AccordionDetails>
+                        </Accordion>
 
-            <Grid item xs={4} >
-                <Card p={2} sx={{
-                    display: 'flex', height: 100, cursor: 'pointer',
-                    backgroundColor: '#317b52', '&:hover': { backgroundColor: '#5acdbd' }
-                }}
-                    onClick={() => loadMore()}>
-                    <CardContent sx={{ flex: '1 0 auto' }}>
-                        <Typography component="div" variant="h5" sx={{ color: 'white' }}>
-                            Cargar Más
-                        </Typography>
-                    </CardContent>
-                    <CardMedia
-                        component="img"
-                        sx={{ width: 100, p: 2 }}
-                        image={POKE_IMG}
-                        alt="Live from space album cover"
-                    />
-                </Card>
-            </Grid>
-        </Grid>
+                        <Accordion>
+                            <AccordionSummary
+                                    expandIcon={<ExpandMoreIcon />}
+                                    aria-controls="panel1a-content"
+                                    id="panel1a-header"
+                                    >
+                                    <Typography>Movimientos</Typography>
+                            </AccordionSummary>
+                                <AccordionDetails>
+                                {pokemonData && pokemonData.moves && pokemonData.moves.map((mo, index) => ( 
+                                    <Typography key={mo.index}>
+                                        {mo.move.name}
+                                    </Typography>) 
+                                )}  
+                                </AccordionDetails>
+                        </Accordion>
+                </DialogContent>
+            </Dialog>        
+        </>
     )
 };
 export default FetchList;
+
+function BootstrapDialogTitle(props) {
+    const { children, onClose, ...other } = props;
+  
+    return (
+      <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+        {children}
+        {onClose ? (
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        ) : null}
+      </DialogTitle>
+    );
+  }
